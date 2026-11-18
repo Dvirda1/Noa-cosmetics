@@ -139,7 +139,7 @@ input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--lin
 .gal img{flex:none;width:160px;height:200px;max-width:none;object-fit:cover;object-position:center 40%;border-radius:14px;scroll-snap-align:center;cursor:zoom-in;box-shadow:0 12px 30px #6b544830;transition:transform .5s}
 .gal img:hover{transform:scale(1.03)}
 @media(max-width:600px){.gal img{width:130px;height:165px}}
-.gb{position:absolute;top:calc(50% - 26px);z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 6px 20px #00000030;transition:.2s}
+.gb{direction:ltr;unicode-bidi:isolate;position:absolute;top:calc(50% - 26px);z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:var(--card);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;box-shadow:0 6px 20px #00000030;transition:.2s}
 .gb:hover{background:var(--accent);color:var(--on)}.gb-l{left:-8px}.gb-r{right:-8px}
 @media(prefers-reduced-motion:reduce){.hero-txt>*{animation:none}}
 .about .wrap{grid-template-columns:1fr;max-width:720px;text-align:center}
@@ -205,7 +205,7 @@ footer a{color:#e8c9bf}
 
 <section id="gallery"><div class="wrap">
 <div class="title"><h2>העבודות שלי</h2><span class="line"></span></div>
-<div class="gal-wrap"><button class="gb gb-r" aria-label="הקודם">›</button><div class="gal" id="gal"></div><button class="gb gb-l" aria-label="הבא">‹</button></div>
+<div class="gal-wrap"><button class="gb gb-r" aria-label="הקודם">‹</button><div class="gal" id="gal"></div><button class="gb gb-l" aria-label="הבא">›</button></div>
 </div></section>
 
 <div class="lb" id="lb"><img alt=""></div>
