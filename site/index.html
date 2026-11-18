@@ -258,12 +258,12 @@ const IMG=["images/img01.jpg", "images/img02.jpg", "images/img03.jpg", "images/i
 const API='https://script.google.com/macros/s/AKfycbw3nViWy8ztmxbpXAedS_mfhWgNlhUCerEdICTXRTUaEpZhkr_o6R7yzZz2RrQQBs2JjA/exec';
 const SERVICES=[{k:'brows',n:'עיצוב גבות',p:60},{k:'lash',n:'הרמת ריסים',p:200},{k:'lift',n:'הרמת גבות',p:150},{k:'combo',n:'חבילה משולבת',p:320}];
 const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי'];
-let st={svc:'brows',date:null,time:null},taken=new Set(),db=null;
+let st={svc:'brows',date:null,time:null},taken=new Set(),closedDays=new Set(),db=null;
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const dk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 let CFG={},WA='972506473569';
-function hoursFor(d){const w=d.getDay();if(String(CFG.closed_weekdays||'6').split(/[,\s]+/).includes(String(w))||String(CFG.closed_dates||'').split(/[,\s]+/).includes(dk(d)))return[];const o=+(CFG.open||9),end=w===5?+(CFG.fri_close||13):+(CFG.close||18);const h=[];for(let x=o;x<end;x++)h.push(pad(x)+':00');return h}
+function hoursFor(d){const w=d.getDay();if(closedDays.has(dk(d))||String(CFG.closed_weekdays||'6').split(/[,\s]+/).includes(String(w))||String(CFG.closed_dates||'').split(/[,\s]+/).includes(dk(d)))return[];const o=+(CFG.open||9),end=w===5?+(CFG.fri_close||13):+(CFG.close||18);const h=[];for(let x=o;x<end;x++)h.push(pad(x)+':00');return h}
 const gi=u=>{const m=String(u).match(/[-\w]{25,}/);return /drive\.google|^[-\w]{25,}$/.test(u)&&m?'https://drive.google.com/thumbnail?id='+m[0]+'&sz=w1200':u};
 const fixText = v => String(v ?? '').replace(/סגנוד/g,'סגנון');
 async function loadContent(){try{const r=await fetch(API+'?action=content');const j=await r.json();CFG=j.content||{};
@@ -279,6 +279,7 @@ function renderSvc(){$('svc').innerHTML='';SERVICES.forEach(s=>{const b=document
 function renderDays(){$('days').innerHTML='';dates.forEach(d=>{const b=document.createElement('button');const k=dk(d);b.className='chip day'+(st.date===k?' on':'');b.innerHTML='<small>'+DN[d.getDay()]+'</small><b>'+d.getDate()+'</b><small>'+pad(d.getMonth()+1)+'</small>';b.onclick=()=>{st.date=k;st.time=null;renderDays();renderSlots();upd()};$('days').appendChild(b)})}
 function renderSlots(){
   const d=dates.find(x=>dk(x)===st.date);$('slots').innerHTML='';const now=new Date();
+  if(!hoursFor(d).length){$('slots').innerHTML='<div class="hint" style="margin:0">ביום הזה אני לא עובדת 🌿 בחרי יום אחר.</div>';return}
   hoursFor(d).forEach(h=>{const b=document.createElement('button');b.className='chip'+(st.time===h?' on':'');b.textContent=h;
     const past=dk(now)===st.date&&parseInt(h)<=now.getHours();
     b.disabled=past||taken.has(st.date+'_'+h);
@@ -307,7 +308,7 @@ $('go').onclick=async()=>{
 };
 renderSvc();renderDays();renderSlots();
 if(API)loadContent();
-if(API){const ld=async()=>{try{const r=await fetch(API+'?action=taken');const j=await r.json();taken=new Set(j.taken);renderSlots()}catch(e){}};ld();setInterval(ld,30000)}
+if(API){const ld=async()=>{try{const r=await fetch(API+'?action=taken');const j=await r.json();taken=new Set(j.taken);closedDays=new Set(j.closed||[]);renderSlots()}catch(e){}};ld();setInterval(ld,30000)}
 $('heroimg').style.backgroundImage='url('+IMG[2]+')';
 document.querySelectorAll('.sc[data-i]').forEach(e=>e.style.backgroundImage='url('+IMG[e.dataset.i]+')');
 document.querySelectorAll('.sc').forEach(c=>{c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-expanded','false');

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>ניהול · Noa Cosmetics</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="admin.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ניהול נעה">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#faf6f2">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#faf6f2;--card:#fffdfb;--ink:#3a302b;--muted:#7d6d65;--accent:#86695e;--on:#fff;--pink:#ecd5d3;--line:#e6d9d1;--ok:#4f7d5c;--okbg:#e7f0e9;--bad:#a34a3f;--badbg:#f6e3df;--off:#efe9e5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1f1b1a;--card:#2d2826;--ink:#f3ebe6;--muted:#c0b0a8;--accent:#c9a79a;--on:#2a1f1b;--pink:#4a3b3a;--line:#443b38;--ok:#8fc29c;--okbg:#26332a;--bad:#e59a8f;--badbg:#3d2724;--off:#2a2523}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1f1b1a;--card:#2d2826;--ink:#f3ebe6;--muted:#c0b0a8;--accent:#c9a79a;--on:#2a1f1b;--pink:#4a3b3a;--line:#443b38;--ok:#8fc29c;--okbg:#26332a;--bad:#e59a8f;--badbg:#3d2724;--off:#2a2523}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,Arial,sans-serif;font-weight:400;line-height:1.5}
+button,input,select{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+.top img{width:38px;height:38px}
+.top .t{flex:1;font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.12em;direction:ltr;text-align:right;font-size:1.05rem}
+.top .t small{display:block;font-family:Heebo;letter-spacing:0;font-size:.75rem;color:var(--muted);direction:rtl}
+main{max-width:640px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-inset-bottom))}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--on);font-weight:500;cursor:pointer;min-height:46px}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.btn.sm{padding:7px 12px;min-height:38px;font-size:.9rem;border-radius:10px}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.5}
+.tabs{display:flex;gap:6px;background:var(--off);padding:4px;border-radius:14px;margin-bottom:14px}
+.tabs button{flex:1;border:0;background:transparent;padding:10px;border-radius:10px;font-weight:500;color:var(--muted);cursor:pointer}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:0 0 auto;width:60px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:8px 0;text-align:center;cursor:pointer;scroll-snap-align:start;position:relative}
+.day small{display:block;font-size:.72rem;color:var(--muted)}
+.day b{display:block;font-size:1.25rem;font-weight:600}
+.day.on{background:var(--accent);border-color:var(--accent);color:var(--on)}
+.day.on small{color:var(--on);opacity:.85}
+.day.closed{background:var(--off);color:var(--muted)}
+.day.closed.on{background:var(--muted);color:var(--on)}
+.day .n{position:absolute;top:-6px;left:-4px;background:var(--ink);color:var(--bg);border-radius:10px;font-size:.7rem;min-width:20px;height:20px;line-height:20px;padding:0 5px}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0 12px;flex-wrap:wrap}
+.dayhead h2{margin:0;font-size:1.15rem;font-weight:600}
+.banner{border-radius:14px;padding:14px;margin-bottom:12px;background:var(--off);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.banner.vac{background:var(--badbg);color:var(--bad)}
+.slot{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+.slot .h{font-weight:600;font-size:1.05rem;width:52px;flex:0 0 auto;direction:ltr;text-align:center}
+.slot .m{flex:1;min-width:0}
+.slot .m b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .m small{color:var(--muted);font-size:.85rem}
+.slot .a{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tag{display:inline-block;font-size:.78rem;padding:2px 9px;border-radius:20px;font-weight:500}
+.tag.free{background:var(--okbg);color:var(--ok)}
+.tag.blk{background:var(--off);color:var(--muted)}
+.slot.booked{border-color:var(--accent);border-inline-start:4px solid var(--accent)}
+.slot.blocked{background:var(--off)}
+.slot.past{opacity:.5}
+.list .date{font-weight:600;margin:16px 0 8px;color:var(--muted);font-size:.9rem}
+.empty{color:var(--muted);text-align:center;padding:30px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.login{max-width:420px;margin:40px auto;text-align:center}
+.login img{width:84px;margin-bottom:10px}
+.login h1{font-size:1.3rem;margin:0 0 6px}
+.login p{color:var(--muted);margin:0 0 18px}
+.field{display:block;margin-bottom:12px;text-align:right}
+.field span{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.field input,.field select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;min-height:46px}
+.sheet{position:fixed;inset:0;background:rgba(30,20,15,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.sheet.on{display:flex}
+.sheet .in{background:var(--card);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+.sheet h3{margin:0 0 6px;font-size:1.1rem}
+.sheet p{margin:0 0 14px;color:var(--muted)}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(120px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;transition:transform .25s;z-index:30;max-width:90vw;text-align:center}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.muted{color:var(--muted);font-size:.85rem}
+.loading{opacity:.5;pointer-events:none}
+@media (min-width:700px){.sheet{align-items:center}.sheet .in{border-radius:20px}}
+</style>
+</head>
+<body>
+<div class="top" id="top" hidden><img src="logo-mark.svg" alt=""><div class="t">NOA COSMETICS<small>דף הניהול</small></div><button class="btn ghost sm" id="refresh" aria-label="רענון">↻</button><button class="btn ghost sm" id="logout">יציאה</button></div>
+<main id="app"></main>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbw3nViWy8ztmxbpXAedS_mfhWgNlhUCerEdICTXRTUaEpZhkr_o6R7yzZz2RrQQBs2JjA/exec';
+const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pd=k=>{const [y,m,d]=k.slice(0,10).split('-').map(Number);return new Date(y,m-1,d)};
+const label=k=>{const d=pd(k);return 'יום '+DN[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)};
+const wa=p=>{p=String(p).replace(/\D/g,'');return p.startsWith('0')?'972'+p.slice(1):p};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let S=store.get('noa_admin'),D=null,sel=null,tab='day';
+
+async function call(body){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});return r.json()}
+async function adm(op,extra){const j=await call(Object.assign({action:'admin',s:S,op},extra||{}));if(j.reason==='auth'){store.del('noa_admin');S=null;loginView('הכניסה פגה. שלחי לעצמך קישור חדש.');throw new Error('auth')}return j}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
+function sheet(html){$('sheetIn').innerHTML=html;$('sheet').classList.add('on')}
+function closeSheet(){$('sheet').classList.remove('on')}
+$('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
+
+/* ---------- כניסה ---------- */
+function loginView(msg){
+  $('top').hidden=true;
+  $('app').innerHTML='<div class="card login"><img src="logo-mark.svg" alt=""><h1>דף הניהול של נעה</h1><p>'+esc(msg||'כדי להיכנס, נשלח קישור כניסה למייל של נעה.')+'</p><button class="btn" id="send" style="width:100%">שלחי לי קישור כניסה</button><p class="muted" id="sent" style="margin-top:14px"></p></div>';
+  $('send').onclick=async()=>{$('send').disabled=true;try{await call({action:'login'});$('sent').innerHTML='✉️ נשלח! פתחי את המייל ולחצי על הקישור.<br>הוא תקף ל-15 דקות.'}catch(e){$('sent').textContent='משהו השתבש. נסי שוב.';$('send').disabled=false}};
+}
+async function boot(){
+  const m=location.hash.match(/t=([0-9a-f]{64})/);
+  if(m){history.replaceState(null,'',location.pathname);$('app').innerHTML='<p class="empty">נכנסת…</p>';
+    try{const j=await call({action:'session',t:m[1]});if(j.ok){S=j.s;store.set('noa_admin',S)}else{return loginView('הקישור כבר נוצל או שפג תוקפו. שלחי קישור חדש.')}}catch(e){return loginView('משהו השתבש. נסי שוב.')}}
+  if(!S)return loginView();
+  $('top').hidden=false;await load();
+}
+$('logout').onclick=async()=>{if(!confirm('לצאת מדף הניהול במכשיר הזה?'))return;try{await adm('logout')}catch(e){}store.del('noa_admin');S=null;loginView('יצאת. אפשר להיכנס שוב מתי שתרצי.')};
+$('refresh').onclick=()=>load();
+
+/* ---------- נתונים ---------- */
+async function load(){
+  $('app').classList.add('loading');
+  try{const j=await adm('list');if(!j.ok){toast('לא הצלחנו לטעון. נסי לרענן.');return}D=j;D.bk={};j.bookings.forEach(b=>D.bk[b.key]=b);D.bd=new Set(j.blocks.days);D.bh=new Set(j.blocks.hours);render()}
+  catch(e){if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}
+  finally{$('app').classList.remove('loading')}
+}
+function days(){const a=[],t=new Date();for(let i=0;i<45;i++)a.push(new Date(t.getFullYear(),t.getMonth(),t.getDate()+i));return a}
+function weeklyClosed(d){const c=D.cfg;return String(c.closed_weekdays||'6').split(/[,\s]+/).includes(String(d.getDay()))||String(c.closed_dates||'').split(/[,\s]+/).includes(dk(d))}
+function hours(d){const c=D.cfg,o=+(c.open||9),e=d.getDay()===5?+(c.fri_close||13):+(c.close||18),h=[];for(let x=o;x<e;x++)h.push(pad(x)+':00');
+  Object.keys(D.bk).forEach(k=>{if(k.startsWith(dk(d))){const t=k.slice(11);if(!h.includes(t))h.push(t)}});return h.sort()}
+function countFor(k){return Object.keys(D.bk).filter(x=>x.startsWith(k)).length}
+
+/* ---------- תצוגה ---------- */
+function render(){
+  const ds=days();if(!sel)sel=dk(ds[0]);
+  let h='<div class="tabs"><button data-t="day" class="'+(tab==='day'?'on':'')+'">לוח לפי ימים</button><button data-t="list" class="'+(tab==='list'?'on':'')+'">כל התורים ('+D.bookings.length+')</button></div>';
+  if(tab==='list')h+=listHtml();else h+=dayHtml(ds);
+  $('app').innerHTML=h;
+  $('app').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
+  $('app').querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{sel=b.dataset.day;render()});
+  $('app').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>act(b.dataset.act,b.dataset.k));
+  const on=$('app').querySelector('.day.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});
+}
+function dayHtml(ds){
+  let h='<div class="days">'+ds.map(d=>{const k=dk(d),n=countFor(k),cl=D.bd.has(k)||weeklyClosed(d);return '<button class="day'+(k===sel?' on':'')+(cl?' closed':'')+'" data-day="'+k+'"><small>'+DN[d.getDay()]+'</small><b>'+d.getDate()+'</b><small>'+pad(d.getMonth()+1)+'</small>'+(n?'<span class="n">'+n+'</span>':'')+'</button>'}).join('')+'</div>';
+  const d=pd(sel),vac=D.bd.has(sel),wk=weeklyClosed(d),now=new Date(),isToday=sel===dk(now);
+  h+='<div class="dayhead"><h2>'+label(sel)+'</h2>'+(vac||wk?'':'<button class="btn ghost sm" data-act="vacday" data-k="'+sel+'">🌴 יום חופש</button>')+'</div>';
+  if(vac)h+='<div class="banner vac"><span>🌴 סימנת את היום כיום חופש. באתר הוא מופיע סגור.</span><button class="btn sm" data-act="unvac" data-k="'+sel+'">פתיחת היום</button></div>';
+  else if(wk)h+='<div class="banner"><span>היום הזה סגור קבוע (לפי שעות הפעילות בגיליון).</span></div>';
+  const hs=(vac||wk)?Object.keys(D.bk).filter(k=>k.startsWith(sel)).map(k=>k.slice(11)).sort():hours(d);
+  if(!hs.length&&(vac||wk))return h+'<p class="empty">אין תורים ביום הזה.</p>'+rangeBtn();
+  h+=hs.map(t=>{const k=sel+'_'+t,b=D.bk[k],blk=D.bh.has(k),past=isToday&&parseInt(t)<=now.getHours();
+    if(b)return '<div class="slot booked'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+k+'">ביטול</button></div></div>';
+    if(blk)return '<div class="slot blocked'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><span class="tag blk">⛔ חסום</span></div><div class="a"><button class="btn ghost sm" data-act="unblock" data-k="'+k+'">פתיחה</button></div></div>';
+    return '<div class="slot'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><span class="tag free">פנוי</span></div><div class="a">'+(past?'':'<button class="btn ghost sm" data-act="add" data-k="'+k+'">+ תור</button><button class="btn ghost sm" data-act="block" data-k="'+k+'">חסימה</button>')+'</div></div>';
+  }).join('');
+  return h+rangeBtn();
+}
+const rangeBtn=()=>'<div style="margin-top:18px;text-align:center"><button class="btn ghost" data-act="range" style="width:100%">🗓️ חופשה של כמה ימים</button></div>';
+function listHtml(){
+  if(!D.bookings.length)return '<p class="empty">אין תורים עתידיים כרגע.</p>';
+  let h='<div class="list">',last='';
+  D.bookings.forEach(b=>{const d=b.key.slice(0,10);if(d!==last){h+='<div class="date">'+label(d)+'</div>';last=d}
+    h+='<div class="slot booked"><div class="h">'+b.key.slice(11)+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+b.key+'">ביטול</button></div></div>'});
+  return h+'</div>';
+}
+
+/* ---------- פעולות ---------- */
+async function run(op,extra,ok){try{const j=await adm(op,extra);if(j.ok){toast(ok);await load()}else toast(j.reason==='taken'?'השעה הזו כבר תפוסה':'לא הצלחנו. נסי שוב.')}catch(e){if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}}
+function act(a,k){
+  if(a==='block')return run('block',{keys:[k]},'השעה '+k.slice(11)+' נחסמה באתר');
+  if(a==='unblock')return run('unblock',{keys:[k]},'השעה '+k.slice(11)+' פתוחה שוב באתר');
+  if(a==='unvac')return run('unblock',{keys:[k]},'היום פתוח שוב באתר');
+  if(a==='vacday'){const n=countFor(k);
+    sheet('<h3>🌴 יום חופש: '+label(k)+'</h3><p>'+(n?'שימי לב: יש ביום הזה '+n+' תורים. הם לא יתבטלו לבד, כדאי לעדכן את הלקוחות ולבטל אותם.':'היום יופיע באתר סגור, ואי אפשר יהיה לקבוע בו תור.')+'</p><div class="row"><button class="btn" id="ok">סימון יום חופש</button><button class="btn ghost" id="no">ביטול</button></div>');
+    $('no').onclick=closeSheet;$('ok').onclick=()=>{closeSheet();run('block',{keys:[k]},'סומן כיום חופש')};return}
+  if(a==='range'){const t=dk(new Date());
+    sheet('<h3>🗓️ חופשה של כמה ימים</h3><p>כל הימים בטווח יופיעו באתר סגורים.</p><label class="field"><span>מתאריך</span><input type="date" id="f" min="'+t+'" value="'+sel+'"></label><label class="field"><span>עד תאריך (כולל)</span><input type="date" id="to" min="'+t+'" value="'+sel+'"></label><p class="muted" id="rn"></p><div class="row"><button class="btn" id="ok">סימון חופשה</button><button class="btn ghost" id="no">ביטול</button></div>');
+    const chk=()=>{const f=$('f').value,to=$('to').value;if(!f||!to||to<f){$('rn').textContent='';return[]}const ks=[];for(let d=pd(f);dk(d)<=to&&ks.length<60;d.setDate(d.getDate()+1))ks.push(dk(d));const n=Object.keys(D.bk).filter(x=>ks.includes(x.slice(0,10))).length;$('rn').textContent=ks.length+' ימים'+(n?' · שימי לב: יש בהם '+n+' תורים קיימים שלא יתבטלו לבד':'');return ks};
+    $('f').oninput=()=>{if($('to').value<$('f').value)$('to').value=$('f').value;chk()};$('to').oninput=chk;chk();
+    $('no').onclick=closeSheet;$('ok').onclick=()=>{const ks=chk();if(!ks.length)return toast('בחרי תאריכים');closeSheet();run('block',{keys:ks},'סומנה חופשה של '+ks.length+' ימים')};return}
+  if(a==='cancel'){const b=D.bk[k];
+    sheet('<h3>ביטול התור</h3><p><b>'+esc(b.name)+'</b> · '+esc(b.service)+'<br>'+label(k)+' בשעה '+k.slice(11)+'<br>אחרי הביטול השעה תחזור להיות פנויה באתר.</p><div class="row"><button class="btn danger" id="ok">כן, לבטל</button><button class="btn ghost" id="no">חזרה</button></div>');
+    $('no').onclick=closeSheet;
+    $('ok').onclick=async()=>{$('ok').disabled=true;try{const j=await adm('cancel',{key:k});if(!j.ok){closeSheet();toast('לא הצלחנו לבטל. נסי לרענן.');return}
+      const msg='היי '+b.name+', התור שלך ל'+b.service+' ב'+label(k)+' בשעה '+k.slice(11)+' בוטל. אם תרצי לקבוע מועד אחר, אני כאן 💗 נעה';
+      sheet('<h3>✅ התור בוטל</h3><p>השעה פנויה שוב באתר.'+(b.phone?' רוצה להודיע ל'+esc(b.name)+'?':'')+'</p>'+(b.phone?'<a class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px" target="_blank" rel="noopener" href="https://wa.me/'+wa(b.phone)+'?text='+encodeURIComponent(msg)+'">שליחת הודעה בוואטסאפ</a>':'')+'<button class="btn ghost" id="no" style="width:100%">סגירה</button>');
+      $('no').onclick=closeSheet;await load()}catch(e){closeSheet();if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}};return}
+  if(a==='add'){
+    sheet('<h3>רישום תור: '+label(k)+' · '+k.slice(11)+'</h3><p>למי שקבעה בטלפון או בוואטסאפ. השעה תיתפס באתר.</p><label class="field"><span>שם</span><input id="an" autocomplete="off"></label><label class="field"><span>טלפון (לא חובה)</span><input id="ap" type="tel" dir="ltr" style="text-align:right"></label><label class="field"><span>טיפול</span><select id="as">'+D.services.map(s=>'<option>'+esc(s)+'</option>').join('')+'</select></label><div class="row"><button class="btn" id="ok">שמירת התור</button><button class="btn ghost" id="no">ביטול</button></div>');
+    $('no').onclick=closeSheet;$('an').focus();
+    $('ok').onclick=()=>{const n=$('an').value.trim();if(n.length<2)return toast('צריך לכתוב שם');closeSheet();run('add',{key:k,name:n,phone:$('ap').value,service:$('as').value},'התור נרשם')};return}
+}
+boot();
+</script>
+</body>
+</html>

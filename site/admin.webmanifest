@@ -1,0 +1,12 @@
+{
+  "name": "ניהול Noa Cosmetics",
+  "short_name": "ניהול נעה",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "he",
+  "background_color": "#faf6f2",
+  "theme_color": "#faf6f2",
+  "icons": [{ "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }]
+}
