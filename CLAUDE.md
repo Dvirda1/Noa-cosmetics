@@ -20,6 +20,8 @@ Changes to `apps-script/Code.gs` take effect only after updating the script in G
 
 ## Notes
 - Admin page: `site/admin.html` → https://noa-cosmetics.vercel.app/admin. Login = one-time link emailed to the sheet owner (or `notify_email`). Blocks live in the sheet tab `Blocks` (day `2026-12-25` or hour `2026-12-25_14:00`), cancelled bookings move to `Cancelled`.
+- The Apps Script project has 4 ACTIVE web-app deployments (main AKfycbw3n…, plus old AKfycbwesLO0…, AKfycbxXEyeh…, AKfycbyzYrOF…). When deploying a new version, move ALL of them to it (or have the user archive the old three), otherwise old code without protections stays reachable.
+- Site JS lives in `site/app.js` and `site/admin.js` (CSP is `script-src 'self'`, no inline scripts). Bump `?v=` in the HTML when changing them.
 - Updating Code.gs in the browser: open the project editor, set the Monaco model from the pinned raw GitHub file of the pushed commit, save, then Deploy → Manage deployments → edit → New version.
 - Repo is public: never commit secrets, tokens or private data.
 - Commit identity is set locally to Dvirda1 / GitHub noreply email.
