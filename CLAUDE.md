@@ -16,7 +16,7 @@ After making a change the user asked for:
 2. Commit with a clear message and `git push origin main` directly — no VS Code needed. Git auth is via GitHub CLI at `~/.local/bin/gh` (credential helper set by `gh auth setup-git`).
 3. Wait ~1–2 minutes and check the live site loads (curl https://noa-cosmetics.vercel.app/).
 
-Changes to `apps-script/Code.gs` also need `clasp push` + `clasp deploy -i <deployment id from README>` to take effect — tell the user, since clasp may need its own login.
+Changes to `apps-script/Code.gs` take effect only after updating the script in Google: the clasp login on this Mac sees no scripts (Nov 2026), so the user pastes Code.gs into the sheet's Extensions → Apps Script editor, then Deploy → Manage deployments → edit → New version (keeps the same /exec URL that is in `site/index.html`).
 
 ## Notes
 - Repo is public: never commit secrets, tokens or private data.
