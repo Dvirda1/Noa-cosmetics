@@ -28,10 +28,11 @@ nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--
 nav .wrap{display:flex;justify-content:space-between;align-items:center;height:72px;gap:16px}
 .logo{font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.14em;font-size:1.25rem;line-height:1.1;direction:ltr;text-align:left}
 .logo small{display:block;font:400 .6rem Heebo,sans-serif;letter-spacing:.3em;color:var(--muted)}
-.links{display:flex;gap:28px}
-.links a{color:var(--ink);text-decoration:none;font-weight:400;font-size:.95rem;padding:6px 0;border-bottom:2px solid transparent}
+.links{display:flex;gap:24px}
+.links a{color:var(--ink);text-decoration:none;font-weight:400;font-size:.95rem;padding:6px 0;border-bottom:2px solid transparent;white-space:nowrap}
 .links a:hover{border-color:var(--accent)}
-@media(max-width:760px){.links{display:none}}
+nav .btn{white-space:nowrap}
+@media(max-width:900px){.links{display:none}}
 .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on);border:0;border-radius:10px;padding:11px 26px;font:400 1rem Heebo,sans-serif;cursor:pointer;text-decoration:none;transition:.2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px #6b544844}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
@@ -112,6 +113,16 @@ input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--lin
 @media(prefers-reduced-motion:reduce){.hero-txt>*{animation:none}}
 .about .wrap{grid-template-columns:1fr;max-width:720px;text-align:center}
 .about .line{margin:10px auto 14px}
+#faq{background:var(--bg2)}
+.faq{max-width:760px;margin:0 auto;display:grid;gap:10px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:14px;transition:border-color .2s}
+.faq details[open]{border-color:var(--accent)}
+.faq summary{list-style:none;cursor:pointer;padding:16px 20px;font-weight:400;font-size:1.02rem;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);color:var(--accent);font-size:1.2rem;transition:transform .25s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:14px}
+.faq details p{margin:0;padding:0 20px 18px;color:var(--muted)}
 footer{background:#2d2a29;color:#e9dfd9;text-align:center;padding:34px 20px}
 footer a{color:#e8c9bf}
 </style>
@@ -119,7 +130,7 @@ footer a{color:#e8c9bf}
 <body>
 <nav><div class="wrap">
 <div class="logo">NOA COSMETICS<small>BROWS &amp; LASHES</small></div>
-<div class="links"><a href="#top">בית</a><a href="#services">הטיפולים</a><a href="#about">אודות</a><a href="#gallery">גלריה</a><a href="#book">הזמנת תור</a><a href="#contact">צור קשר</a></div>
+<div class="links"><a href="#top">בית</a><a href="#services">הטיפולים</a><a href="#about">אודות</a><a href="#gallery">גלריה</a><a href="#faq">שאלות נפוצות</a><a href="#book">הזמנת תור</a><a href="#contact">צור קשר</a></div>
 <a class="btn" href="#book">קביעת תור</a>
 </div></nav>
 
@@ -160,6 +171,22 @@ footer a{color:#e8c9bf}
 </div></section>
 
 <div class="lb" id="lb"><img alt=""></div>
+
+<section id="faq"><div class="wrap">
+<div class="title"><h2>שאלות נפוצות</h2><span class="line"></span></div>
+<div class="faq">
+<details><summary>כמה זמן מחזיקה הרמת ריסים?</summary><p>בדרך כלל בין 6 ל-8 שבועות. הריסים מתחלפים באופן טבעי, ולכן התוצאה נעלמת בהדרגה בלי לפגוע בריסים.</p></details>
+<details><summary>כמה זמן מחזיקה הרמת גבות?</summary><p>בדרך כלל בין 4 ל-6 שבועות, תלוי בסוג השיער ובשגרת הטיפוח. גבות שמנות או שמקבלות הרבה מים וקרמים עשויות להחזיק קצת פחות.</p></details>
+<details><summary>כל כמה זמן כדאי לעצב גבות?</summary><p>מומלץ כל 3 עד 5 שבועות, כדי לשמור על צורה נקייה ומסודרת. אם את מגדלת גבות, כדאי להתייעץ איתי ונבנה תוכנית מתאימה.</p></details>
+<details><summary>האם הטיפול כואב?</summary><p>לא. הרמת ריסים והרמת גבות לא כואבות בכלל, ורוב הלקוחות אפילו נרגעות במהלכן. בעיצוב גבות יש לכל היותר תחושת עקצוץ קלה ורגעית.</p></details>
+<details><summary>איך להגיע מוכנה לטיפול?</summary><p>מומלץ להגיע בלי איפור עיניים וגבות (מסקרה, אייליינר, עיפרון גבות). בהרמת ריסים כדאי להוריד עדשות מגע לפני הטיפול.</p></details>
+<details><summary>מה חשוב לדעת אחרי הרמת ריסים או גבות?</summary><p>ב-24 עד 48 השעות הראשונות כדאי להימנע ממים, אדים, סאונה, איפור ושפשוף האזור. אחר כך אפשר לחזור לשגרה, ושמן טיפוח ייעודי יעזור לשמור על הריסים והגבות בריאים.</p></details>
+<details><summary>יש לי עור רגיש או אלרגיות. אפשר לעשות את הטיפול?</summary><p>ברוב המקרים כן. ספרי לי מראש על רגישויות או אלרגיות, ונבדוק יחד אם צריך בדיקת רגישות קצרה לפני הטיפול.</p></details>
+<details><summary>אפשר לעשות את הטיפולים בהריון או בהנקה?</summary><p>מומלץ להתייעץ איתי לפני. שינויים הורמונליים יכולים להשפיע על התוצאה ועל משך ההחזקה, ונתאים יחד את מה שנכון לך.</p></details>
+<details><summary>אפשר לשלב כמה טיפולים באותו ביקור?</summary><p>בהחלט. החבילה המשולבת מאפשרת לעשות כמה טיפולים בביקור אחד, למשל הרמת ריסים ועיצוב גבות, וחוסכת לך זמן וכסף.</p></details>
+<details><summary>מה עושים אם צריך לשנות או לבטל תור?</summary><p>פשוט שלחי לי הודעה בוואטסאפ, כמה שיותר מוקדם, ונמצא יחד מועד אחר שנוח לך.</p></details>
+</div>
+</div></section>
 
 <section id="book"><div class="wrap" style="max-width:760px">
 <div class="title"><h2>הזמנת תור</h2><span class="line"></span></div>
@@ -244,7 +271,7 @@ document.querySelectorAll('[data-bg]').forEach(e=>e.style.backgroundImage='url('
 IMG.forEach((s,i)=>{const im=document.createElement('img');im.src=s;im.loading='lazy';im.alt='עבודה של נעה';im.onclick=()=>{$('lb').firstChild.src=s;$('lb').classList.add('on')};$('gal').appendChild(im)});
 $('lb').onclick=()=>$('lb').classList.remove('on');
 (()=>{const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const els=[...document.querySelectorAll('.title,.trust>.wrap>div,.split>div:first-child,.sc,.about .wrap>*,.book,.gal-wrap')];
+const els=[...document.querySelectorAll('.title,.trust>.wrap>div,.split>div:first-child,.sc,.about .wrap>*,.book,.gal-wrap,.faq')];
 if(!rm&&'IntersectionObserver' in window){els.forEach(e=>{e.classList.add('rv');e.style.transitionDelay=Math.min([...e.parentNode.children].indexOf(e),5)*.12+'s'});
 const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){const e=x.target;e.classList.add('in');io.unobserve(e);setTimeout(()=>{e.classList.remove('rv','in');e.style.transitionDelay=''},1600)}}),{threshold:.12});els.forEach(e=>io.observe(e))}
 const g=$('gal');document.querySelector('.gb-l').onclick=()=>g.scrollBy({left:-g.clientWidth*.8});document.querySelector('.gb-r').onclick=()=>g.scrollBy({left:g.clientWidth*.8})})();
