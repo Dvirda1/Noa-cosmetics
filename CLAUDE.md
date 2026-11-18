@@ -19,6 +19,8 @@ After making a change the user asked for:
 Changes to `apps-script/Code.gs` take effect only after updating the script in Google: the clasp login on this Mac sees no scripts (Nov 2026), so the user pastes Code.gs into the sheet's Extensions → Apps Script editor, then Deploy → Manage deployments → edit → New version (keeps the same /exec URL that is in `site/index.html`).
 
 ## Notes
+- Admin page: `site/admin.html` → https://noa-cosmetics.vercel.app/admin. Login = one-time link emailed to the sheet owner (or `notify_email`). Blocks live in the sheet tab `Blocks` (day `2026-12-25` or hour `2026-12-25_14:00`), cancelled bookings move to `Cancelled`.
+- Updating Code.gs in the browser: open the project editor, set the Monaco model from the pinned raw GitHub file of the pushed commit, save, then Deploy → Manage deployments → edit → New version.
 - Repo is public: never commit secrets, tokens or private data.
 - Commit identity is set locally to Dvirda1 / GitHub noreply email.
 - `assets/old/Code-old-2026-10-25.gs` has a WhatsApp thank-you message with a navigation link ({map}) and "נעה" signature that the current Code.gs dropped — the user may want it back.
