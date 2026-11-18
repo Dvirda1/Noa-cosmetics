@@ -156,6 +156,7 @@ input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--lin
 .faq details p{margin:0;padding:0 20px 18px;color:var(--muted)}
 footer{background:#2d2a29;color:#e9dfd9;text-align:center;padding:34px 20px}
 footer a{color:#e8c9bf}
+.privacy{margin:14px 0 0;font-size:.82rem;color:var(--muted);line-height:1.6}
 .credit{margin-top:14px;padding-top:12px;border-top:1px solid #e9dfd926;display:inline-block;font-size:.8rem;letter-spacing:.02em;color:#e9dfd9b3}
 .credit a{text-decoration:none;font-weight:400;border-bottom:1px solid #e8c9bf66;padding-bottom:1px;transition:border-color .2s,color .2s}
 .credit a:hover,.credit a:focus-visible{color:#fff;border-color:#e8c9bf}
@@ -239,7 +240,9 @@ footer a{color:#e8c9bf}
 <label class="lbl">4. הפרטים שלך</label>
 <div class="two"><input id="nm" placeholder="שם מלא" autocomplete="name"><input id="ph" type="tel" placeholder="טלפון" autocomplete="tel" dir="ltr" style="text-align:right"></div>
 <input id="em" type="email" placeholder="אימייל לאישור ותזכורת (לא חובה)" autocomplete="email" dir="ltr" style="margin-top:12px;text-align:right">
-<div style="margin-top:22px"><button class="btn" id="go" disabled>אישור התור</button></div>
+<input id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+<p class="privacy">🔒 הפרטים שלך נשמרים בצורה מאובטחת, משמשים רק לקביעת התור ולתזכורת, ולא מועברים לאף אחד.</p>
+<div style="margin-top:18px"><button class="btn" id="go" disabled>אישור התור</button></div>
 <div class="msg" id="msg"></div>
 </div></div></section>
 
@@ -281,14 +284,15 @@ function renderSlots(){
     b.disabled=past||taken.has(st.date+'_'+h);
     b.onclick=()=>{st.time=h;renderSlots();upd()};$('slots').appendChild(b)});
 }
-function upd(){$('go').disabled=!(st.date&&st.time&&$('nm').value.trim().length>1&&$('ph').value.replace(/\D/g,'').length>=9)}
+const phN=()=>$('ph').value.replace(/\D/g,'').replace(/^972/,'0');
+function upd(){$('go').disabled=!(st.date&&st.time&&$('nm').value.trim().length>1&&/^05\d{8}$/.test(phN()))}
 function show(t,err){const m=$('msg');m.textContent=t;m.className='msg show'+(err?' err':'')}
 ['nm','ph'].forEach(i=>$(i).addEventListener('input',upd));
 $('go').onclick=async()=>{
   const key=st.date+'_'+st.time,svc=SERVICES.find(s=>s.k===st.svc).n;
   $('go').disabled=true;
   try{
-    if(API){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key,name:$('nm').value.trim(),phone:$('ph').value.trim(),service:svc,date:st.date,time:st.time,email:$('em').value.trim()})});const j=await r.json();if(!j.ok){show('מצטערת, השעה הזו כבר נתפסה. בחרי שעה אחרת.',true);taken.add(key);st.time=null;renderSlots();upd();return}}else if(db){
+    if(API){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({key,name:$('nm').value.trim(),phone:phN(),service:svc,date:st.date,time:st.time,email:$('em').value.trim(),website:$('website').value})});const j=await r.json();if(!j.ok){if(j.reason==='invalid'){show('נראה שאחד הפרטים לא תקין. בדקי שהשם בעברית או באנגלית, הטלפון נייד ישראלי והאימייל נכון.',true);upd();return}if(j.reason==='limit'){show('כבר יש שני תורים עתידיים על המספר הזה. לתור נוסף פני אליי בוואטסאפ 💗',true);upd();return}if(j.reason==='busy'){show('יש עומס כרגע. נסי שוב בעוד כמה דקות או פני אליי בוואטסאפ.',true);upd();return}show('מצטערת, השעה הזו כבר נתפסה. בחרי שעה אחרת.',true);taken.add(key);st.time=null;renderSlots();upd();return}}else if(db){
       const t=db.collection('taken').doc(key);
       if((await t.get()).exists){show('מצטערת, השעה הזו כבר נתפסה. בחרי שעה אחרת.',true);taken.add(key);st.time=null;renderSlots();upd();return}
       await t.set({t:1});

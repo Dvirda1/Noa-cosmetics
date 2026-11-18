@@ -23,6 +23,7 @@ function defaults_() {
     ['notify_email','','אימייל לקבלת התראות (ריק = האימייל של בעל הגיליון)'],
     ['thanks_text',THANKS,'הודעת התודה בוואטסאפ אחרי קביעת תור. אפשר להשתמש ב- {name} {service} {when} {address}'],
     ['reminder_text','היי {name}, תזכורת לתור שלך מחר ב-{time} ({service}) ב-Noa Cosmetics 💗 מחכה לך! אם צריך לשנות, כתבי לי כאן.','נוסח התזכורת. אפשר להשתמש ב- {name} {time} {service}'],
+    ['keep_days','180','כמה ימים לשמור פרטי לקוחות של תורים שעברו (ריק = לשמור תמיד)'],
     ['hero_image','','קישור לתמונה מ-Google Drive להחלפת תמונת ראש הדף (ריק = התמונה הנוכחית)'],
     ['about_image','','קישור לתמונה מ-Drive עבור חלק "אודות"']
   ];
@@ -90,26 +91,77 @@ function doGet(e) {
       while (it.hasNext()) { const f = it.next(); if (/^image\//.test(f.getMimeType())) a.push([f.getId(), f.getDateCreated().getTime()]); }
       g = a.sort((x,y)=>y[1]-x[1]).map(x=>x[0]);
     } catch (err) {}
-    delete c.notify_email; delete c.gallery_folder;
+    delete c.notify_email; delete c.gallery_folder; delete c.keep_days;
     const out = JSON.stringify({content:c, gallery:g}); cache.put('content', out, 60);
     return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
   }
   return json_({ taken: getBookings_().getDataRange().getValues().slice(1).map(r => String(r[0])) });
 }
 
+// ---- אבטחה: בדיקת כל פרט שמגיע מהאתר לפני שנשמר ----
+const NAME_RE = /^[\u0590-\u05FFa-zA-Z][\u0590-\u05FFa-zA-Z '\-\.\u05F3\u05F4"]{1,39}$/;
+const EMAIL_RE = /^[^\s@<>()"',;:]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
+function validate_(d) {
+  if (!d || typeof d !== 'object' || d.website) return null;               // website = מלכודת לבוטים
+  const key = String(d.key||'');
+  if (!/^\d{4}-\d{2}-\d{2}_\d{2}:00$/.test(key)) return null;
+  const name = String(d.name||'').trim().replace(/\s+/g,' ');
+  if (!NAME_RE.test(name)) return null;
+  const phone = String(d.phone||'').replace(/\D/g,'').replace(/^972/,'0');
+  if (!/^05\d{8}$/.test(phone)) return null;
+  const email = String(d.email||'').trim();
+  if (email && (email.length > 120 || !EMAIL_RE.test(email))) return null;
+  const c = cfg_(), names = SVC.map((s,i) => c['svc'+(i+1)+'_name'] || s[0]).concat(SVC.map(s => s[0]));
+  const service = String(d.service||'');
+  if (names.indexOf(service) < 0) return null;
+  // המועד חייב להיות בעתיד, עד 45 יום קדימה, ובשעות הפעילות
+  const w = when_(key), at = new Date(w.y, w.m-1, w.da, w.h, 0), now = Date.now();
+  if (isNaN(at) || at.getDate() !== w.da || at <= now || at - now > 45*864e5) return null;
+  const wd = at.getDay(), open = +(c.open||9), close = wd === 5 ? +(c.fri_close||13) : +(c.close||18);
+  if (String(c.closed_weekdays||'6').split(/[,\s]+/).indexOf(String(wd)) > -1) return null;
+  if (String(c.closed_dates||'').split(/[,\s]+/).indexOf(key.split('_')[0]) > -1) return null;
+  if (w.h < open || w.h >= close) return null;
+  return { key, name, phone, email, service, date: key.split('_')[0], time: w.t };
+}
+
+// הגבלת קצב: מונע הצפה של תורים מזויפים
+function rateOk_() {
+  const cache = CacheService.getScriptCache(), n = +(cache.get('rate') || 0);
+  if (n >= 8) return false;               // עד 8 תורים חדשים בכל 10 דקות לכל האתר
+  cache.put('rate', String(n+1), 600);
+  return true;
+}
+
 function doPost(e) {
-  const lock = LockService.getScriptLock(); lock.waitLock(10000);
-  let d, ok = false;
+  let d;
+  try { d = validate_(JSON.parse(e.postData.contents)); } catch (err) { d = null; }
+  if (!d) return json_({ok:false, reason:'invalid'});
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return json_({ok:false, reason:'busy'});
+  let ok = false, reason = 'taken';
   try {
-    d = JSON.parse(e.postData.contents);
-    if (!/^\d{4}-\d{2}-\d{2}_\d{2}:00$/.test(d.key)) return json_({ok:false});
-    const s = getBookings_();
-    if (s.getDataRange().getValues().slice(1).some(r => String(r[0]) === d.key)) return json_({ok:false});
-    s.appendRow([d.key, clean_(d.date), clean_(d.time), clean_(d.service), clean_(d.name), "'"+clean_(d.phone), clean_(d.email), new Date(), '']);
-    ok = true;
+    const s = getBookings_(), rows = s.getDataRange().getValues().slice(1);
+    const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    if (rows.some(r => String(r[0]) === d.key)) reason = 'taken';
+    else if (rows.filter(r => String(r[5]).replace(/\D/g,'') === d.phone && String(r[0]) >= today).length >= 2) reason = 'limit';
+    else if (!rateOk_()) reason = 'busy';
+    else {
+      s.appendRow([d.key, d.date, d.time, clean_(d.service), clean_(d.name), "'"+d.phone, clean_(d.email), new Date(), '']);
+      ok = true;
+    }
   } finally { lock.releaseLock(); }
   if (ok) notify_(d);
-  return json_({ok:true});
+  return json_(ok ? {ok:true} : {ok:false, reason});
+}
+
+// פרטיות: מוחק שם, טלפון ואימייל של תורים ישנים (ברירת מחדל: אחרי 180 יום).
+// אפשר לשנות בגיליון Content בשורה keep_days. ריק = לא למחוק אף פעם.
+function purgeOld_() {
+  const v = cfg_().keep_days, days = v === undefined ? 180 : parseInt(v, 10);
+  if (!days || days < 1) return;
+  const s = getBookings_(), rows = s.getDataRange().getValues();
+  const cut = Utilities.formatDate(new Date(Date.now() - days*864e5), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  for (let i = rows.length - 1; i >= 1; i--) if (String(rows[i][0]) && String(rows[i][0]) < cut) s.deleteRow(i+1);
 }
 
 function notify_(d) {
@@ -137,6 +189,7 @@ function dailyReminders() {
     lines.push(time+' · '+r[4]+' · '+r[3]+'\nלשליחת תזכורת בוואטסאפ: https://wa.me/'+wa_(r[5])+'?text='+encodeURIComponent(txt));
     s.getRange(i+1,9).setValue(new Date());
   }
+  try { purgeOld_(); } catch(err) { console.error(String(err)); }
   if (lines.length) MailApp.sendEmail({to:c.notify_email||Session.getEffectiveUser().getEmail(), name:'Noa Cosmetics', subject:'התורים של מחר ('+lines.length+')', body:lines.join('\n\n')});
 }
 
