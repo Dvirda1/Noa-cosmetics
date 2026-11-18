@@ -92,7 +92,7 @@ function doGet(e) {
       while (it.hasNext()) { const f = it.next(); if (/^image\//.test(f.getMimeType())) a.push([f.getId(), f.getDateCreated().getTime()]); }
       g = a.sort((x,y)=>y[1]-x[1]).map(x=>x[0]);
     } catch (err) {}
-    delete c.notify_email; delete c.gallery_folder; delete c.keep_days; delete c.site_url;
+    delete c.notify_email; delete c.gallery_folder; delete c.keep_days; delete c.site_url; delete c.thanks_text; delete c.reminder_text;
     const out = JSON.stringify({content:c, gallery:g}); cache.put('content', out, 60);
     return ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
   }
@@ -128,10 +128,19 @@ function validate_(d) {
   return { key, name, phone, email, service, date: key.split('_')[0], time: w.t };
 }
 
+// מונה יומי (נשמר עד סוף היום), להגנה על מכסת המיילים של Google
+function dailyOk_(name, max) {
+  const p = PropertiesService.getScriptProperties(), day = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const k = 'day_' + name, v = String(p.getProperty(k) || ''), n = v.indexOf(day + ':') === 0 ? +v.split(':')[1] : 0;
+  if (n >= max) return false;
+  p.setProperty(k, day + ':' + (n + 1));
+  return true;
+}
 // הגבלת קצב: מונע הצפה של תורים מזויפים
 function rateOk_() {
   const cache = CacheService.getScriptCache(), n = +(cache.get('rate') || 0);
   if (n >= 8) return false;               // עד 8 תורים חדשים בכל 10 דקות לכל האתר
+  if (!dailyOk_('bookings', 25)) return false;   // ועד 25 ביום
   cache.put('rate', String(n+1), 600);
   return true;
 }
@@ -253,9 +262,9 @@ function pwLogin_(email, pw) {
     && typeof pw === 'string' && pw.length <= 200 && pwHash_(pw, salt) === hash;
   if (!good) {
     cache.put('pw_fail', String(fails+1), 900);
-    if (fails + 1 === 5) try { MailApp.sendEmail({to: adminEmail_(), name:'Noa Cosmetics', subject:'⚠️ ניסיונות כניסה שגויים לדף הניהול',
+    if (fails + 1 === 5 && dailyOk_('alert', 1)) try { MailApp.sendEmail({to: adminEmail_(), name:'Noa Cosmetics', subject:'⚠️ ניסיונות כניסה שגויים לדף הניהול',
       body:'היו 5 ניסיונות כניסה שגויים לדף הניהול, והכניסה ננעלה ל-15 דקות.\nאם זה לא היית אתה, מומלץ להחליף סיסמה מתוך דף הניהול.'}); } catch (err) {}
-    return {ok:false, reason: hash ? 'wrong' : 'nopw'};
+    return {ok:false, reason:'wrong'};
   }
   cache.remove('pw_fail');
   return {ok:true, s:newSession_()};
@@ -266,6 +275,7 @@ function adminLogin_() {
   const cache = CacheService.getScriptCache(), n = +(cache.get('login_rate') || 0);
   if (n >= 3) return {ok:true};                       // לא מגלים שיש הגבלה
   cache.put('login_rate', String(n+1), 900);
+  if (!dailyOk_('login', 6)) return {ok:true};       // עד 6 קישורים ביום
   const t = token_();
   cache.put('login_' + sha_(t), '1', 900);            // הקישור תקף 15 דקות, פעם אחת
   const url = (cfg_().site_url || 'https://noa-cosmetics.vercel.app').replace(/\/$/, '') + '/admin#t=' + t;
@@ -298,7 +308,7 @@ function admin_(d) {
 
   if (op === 'list') {
     const c = cfg_();
-    const bookings = getBookings_().getDataRange().getValues().slice(1).filter(r => String(r[0]) >= today)
+    const bookings = getBookings_().getDataRange().getValues().slice(1).filter(r => slotKey_(r[0]) && String(r[0]) >= today)
       .map(r => ({key:String(r[0]), service:String(r[3]), name:String(r[4]), phone:String(r[5]).replace(/^'/,''), email:String(r[6])}))
       .sort((a,b) => a.key < b.key ? -1 : 1);
     const b = blocks_();
