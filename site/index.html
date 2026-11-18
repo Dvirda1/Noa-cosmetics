@@ -30,6 +30,11 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{color-scheme:dark;--bg:#1f1b1a;--bg2:#2a2523;--card:#2d2826;--ink:#f3ebe6;--muted:#c0b0a8;--accent:#c9a79a;--on:#2a1f1b;--pink:#4a3b3a;--line:#443b38;--ok:#8fc29c}
 html{scroll-behavior:smooth;scroll-padding-top:calc(70px + env(safe-area-inset-top,0px))}
 *{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+@supports (overflow:clip){html,body{overflow-x:clip}}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+img,video,svg{max-width:100%}
+.hp{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,Arial,sans-serif;font-weight:300;line-height:1.7}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 h1,h2,h3{font-weight:300;margin:0}
@@ -60,6 +65,7 @@ nav .mnav>.wrap{height:auto;display:flex;flex-direction:column;align-items:stret
 @media(max-width:900px){.links{display:none}.burger{display:flex}}
 @media(min-width:901px){.mnav{display:none}}
 @media(max-width:400px){nav .btn{padding:10px 14px;font-size:.92rem}.nav-end{gap:7px}}
+@media(max-width:360px){nav .wrap{gap:8px}.logo{font-size:1.02rem;letter-spacing:.08em}.logo small{letter-spacing:.18em;font-size:.55rem}.brand img{width:32px;height:32px}.brand{gap:6px;min-width:0}nav .btn{padding:9px 11px;font-size:.85rem}.nav-end{gap:6px}.burger{width:40px;height:40px}}
 .btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--on);border:0;border-radius:10px;padding:11px 26px;font:400 1rem Heebo,sans-serif;cursor:pointer;text-decoration:none;transition:.2s}
 .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px #6b544844}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
@@ -240,7 +246,7 @@ footer a{color:#e8c9bf}
 <label class="lbl">4. הפרטים שלך</label>
 <div class="two"><input id="nm" placeholder="שם מלא" autocomplete="name"><input id="ph" type="tel" placeholder="טלפון" autocomplete="tel" dir="ltr" style="text-align:right"></div>
 <input id="em" type="email" placeholder="אימייל לאישור ותזכורת (לא חובה)" autocomplete="email" dir="ltr" style="margin-top:12px;text-align:right">
-<input id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+<input id="website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp">
 <p class="privacy">🔒 הפרטים שלך נשמרים בצורה מאובטחת, משמשים רק לקביעת התור ולתזכורת, ולא מועברים לאף אחד.</p>
 <div style="margin-top:18px"><button class="btn" id="go" disabled>אישור התור</button></div>
 <div class="msg" id="msg"></div>
