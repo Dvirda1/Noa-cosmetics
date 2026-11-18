@@ -23,8 +23,11 @@
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,Arial,sans-serif;font-weight:400;line-height:1.5}
 button,input,select{font:inherit;color:inherit}
 .top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px}
+.top[hidden]{display:none}
 .top img{width:38px;height:38px}
 .top .t{flex:1;font-family:'Cormorant Garamond',serif;font-weight:600;letter-spacing:.12em;direction:ltr;text-align:right;font-size:1.05rem}
+.top .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:.9rem;letter-spacing:.06em}
+.top .btn.sm{padding:6px 10px;min-height:36px}
 .top .t small{display:block;font-family:Heebo;letter-spacing:0;font-size:.75rem;color:var(--muted);direction:rtl}
 main{max-width:640px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-inset-bottom))}
 .btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--on);font-weight:500;cursor:pointer;min-height:46px}
@@ -86,7 +89,7 @@ main{max-width:640px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-i
 </style>
 </head>
 <body>
-<div class="top" id="top" hidden><img src="logo-mark.svg" alt=""><div class="t">NOA COSMETICS<small>דף הניהול</small></div><button class="btn ghost sm" id="refresh" aria-label="רענון">↻</button><button class="btn ghost sm" id="logout">יציאה</button></div>
+<div class="top" id="top" hidden><img src="logo-mark.svg" alt=""><div class="t">NOA COSMETICS<small>דף הניהול</small></div><button class="btn ghost sm" id="refresh" aria-label="רענון">↻</button><button class="btn ghost sm" id="pwbtn" aria-label="סיסמה">🔐</button><button class="btn ghost sm" id="logout">יציאה</button></div>
 <main id="app"></main>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
 <div class="toast" id="toast" role="status"></div>
@@ -104,7 +107,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 let S=store.get('noa_admin'),D=null,sel=null,tab='day';
 
 async function call(body){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});return r.json()}
-async function adm(op,extra){const j=await call(Object.assign({action:'admin',s:S,op},extra||{}));if(j.reason==='auth'){store.del('noa_admin');S=null;loginView('הכניסה פגה. שלחי לעצמך קישור חדש.');throw new Error('auth')}return j}
+async function adm(op,extra){const j=await call(Object.assign({action:'admin',s:S,op},extra||{}));if(j.reason==='auth'){store.del('noa_admin');S=null;loginView('הכניסה פגה. צריך להיכנס שוב.');throw new Error('auth')}return j}
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2600)}
 function sheet(html){$('sheetIn').innerHTML=html;$('sheet').classList.add('on')}
 function closeSheet(){$('sheet').classList.remove('on')}
@@ -113,8 +116,31 @@ $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 /* ---------- כניסה ---------- */
 function loginView(msg){
   $('top').hidden=true;
-  $('app').innerHTML='<div class="card login"><img src="logo-mark.svg" alt=""><h1>דף הניהול של נעה</h1><p>'+esc(msg||'כדי להיכנס, נשלח קישור כניסה למייל של נעה.')+'</p><button class="btn" id="send" style="width:100%">שלחי לי קישור כניסה</button><p class="muted" id="sent" style="margin-top:14px"></p></div>';
-  $('send').onclick=async()=>{$('send').disabled=true;try{await call({action:'login'});$('sent').innerHTML='✉️ נשלח! פתחי את המייל ולחצי על הקישור.<br>הוא תקף ל-15 דקות.'}catch(e){$('sent').textContent='משהו השתבש. נסי שוב.';$('send').disabled=false}};
+  $('app').innerHTML='<div class="card login"><img src="logo-mark.svg" alt=""><h1>דף הניהול</h1><p id="lmsg">'+esc(msg||'כניסה עם המייל והסיסמה של המנהל.')+'</p>'
+   +'<form id="lf" autocomplete="on"><label class="field"><span>מייל</span><input id="le" name="username" type="email" autocomplete="username" dir="ltr" required></label>'
+   +'<label class="field"><span>סיסמה</span><input id="lp" name="password" type="password" autocomplete="current-password" dir="ltr" required></label>'
+   +'<button class="btn" id="lb" type="submit" style="width:100%">כניסה</button></form>'
+   +'<p class="muted" id="lerr" style="margin-top:12px;min-height:1.4em"></p>'
+   +'<button class="btn ghost sm" id="send" type="button">כניסה ראשונה / שכחתי סיסמה</button><p class="muted" id="sent" style="margin-top:10px"></p></div>';
+  $('lf').onsubmit=async e=>{e.preventDefault();$('lb').disabled=true;$('lerr').textContent='בודק…';
+    try{const j=await call({action:'pwlogin',email:$('le').value,pw:$('lp').value});
+      if(j.ok){S=j.s;store.set('noa_admin',S);$('lf').remove();$('top').hidden=false;await load();return}
+      $('lerr').textContent=j.reason==='locked'?'יותר מדי ניסיונות. הכניסה נעולה ל-15 דקות.':j.reason==='nopw'?'עדיין לא נבחרה סיסמה. לחץ על "כניסה ראשונה" למטה.':'המייל או הסיסמה לא נכונים.'}
+    catch(err){$('lerr').textContent='אין חיבור. נסה שוב.'}
+    $('lb').disabled=false};
+  $('send').onclick=async()=>{$('send').disabled=true;try{await call({action:'login'});$('sent').innerHTML='✉️ נשלח קישור כניסה למייל של המנהל.<br>הוא תקף ל-15 דקות, ואחרי הכניסה אפשר לבחור סיסמה.'}catch(e){$('sent').textContent='משהו השתבש. נסה שוב.';$('send').disabled=false}};
+}
+function pwSheet(first){
+  sheet('<h3>'+(first?'🔐 בחירת סיסמה':'🔐 החלפת סיסמה')+'</h3><p>'+(first?'בחר סיסמה לכניסה הבאה. האייפון יציע לשמור אותה, ואז אפשר להיכנס עם Face ID.':'הסיסמה החדשה תחליף את הקודמת, וכל המכשירים האחרים ינותקו.')+'</p>'
+   +'<form id="pf"><input type="email" name="username" autocomplete="username" value="'+esc(D.admin)+'" readonly hidden>'
+   +'<label class="field"><span>סיסמה חדשה (לפחות 8 תווים)</span><input id="p1" type="password" autocomplete="new-password" dir="ltr" minlength="8" required></label>'
+   +'<label class="field"><span>שוב, לאימות</span><input id="p2" type="password" autocomplete="new-password" dir="ltr" minlength="8" required></label>'
+   +'<p class="muted" id="perr" style="min-height:1.4em"></p><div class="row"><button class="btn" type="submit" id="pok">שמירה</button><button class="btn ghost" type="button" id="no">'+(first?'אחר כך':'ביטול')+'</button></div></form>');
+  $('no').onclick=closeSheet;
+  $('pf').onsubmit=async e=>{e.preventDefault();const a=$('p1').value,b=$('p2').value;
+    if(a.length<8)return $('perr').textContent='הסיסמה צריכה להיות לפחות 8 תווים';
+    if(a!==b)return $('perr').textContent='שתי הסיסמאות לא זהות';
+    $('pok').disabled=true;try{const j=await adm('setpw',{pw:a});if(j.ok){closeSheet();D.hasPw=true;toast('הסיסמה נשמרה ✅')}else{$('perr').textContent='לא הצלחנו לשמור. נסה שוב.';$('pok').disabled=false}}catch(err){$('pok').disabled=false}};
 }
 async function boot(){
   const m=location.hash.match(/t=([0-9a-f]{64})/);
@@ -122,9 +148,11 @@ async function boot(){
     try{const j=await call({action:'session',t:m[1]});if(j.ok){S=j.s;store.set('noa_admin',S)}else{return loginView('הקישור כבר נוצל או שפג תוקפו. שלחי קישור חדש.')}}catch(e){return loginView('משהו השתבש. נסי שוב.')}}
   if(!S)return loginView();
   $('top').hidden=false;await load();
+  if(m&&D&&!D.hasPw)pwSheet(true);
 }
 $('logout').onclick=async()=>{if(!confirm('לצאת מדף הניהול במכשיר הזה?'))return;try{await adm('logout')}catch(e){}store.del('noa_admin');S=null;loginView('יצאת. אפשר להיכנס שוב מתי שתרצי.')};
 $('refresh').onclick=()=>load();
+$('pwbtn').onclick=()=>{if(D)pwSheet(!D.hasPw)};
 
 /* ---------- נתונים ---------- */
 async function load(){

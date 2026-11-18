@@ -141,6 +141,7 @@ function doPost(e) {
   try { raw = JSON.parse(e.postData.contents); } catch (err) {}
   if (raw && raw.action === 'login') return json_(adminLogin_());
   if (raw && raw.action === 'session') return json_(adminSession_(raw.t));
+  if (raw && raw.action === 'pwlogin') return json_(pwLogin_(raw.email, raw.pw));
   if (raw && raw.action === 'admin') { try { return json_(admin_(raw)); } catch (err) { console.error(String(err)); return json_({ok:false, reason:'error'}); } }
   let d;
   try { d = validate_(raw); } catch (err) { d = null; }
@@ -234,7 +235,31 @@ function blocks_() {
 }
 const sha_ = t => Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(t)).map(b => ('0'+(b&255).toString(16)).slice(-2)).join('');
 const token_ = () => (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
-const ownerEmail_ = () => cfg_().notify_email || Session.getEffectiveUser().getEmail();
+// רק המנהל (החשבון שפרסם את הסקריפט) יכול להיכנס לדף הניהול
+const adminEmail_ = () => Session.getEffectiveUser().getEmail();
+const PW_ITER = 1500;
+function pwHash_(pw, salt) { let h = salt + '|' + pw; for (let i = 0; i < PW_ITER; i++) h = sha_(salt + h); return h; }
+function newSession_() {
+  const s = token_();
+  PropertiesService.getScriptProperties().setProperty('sess_' + sha_(s), String(Date.now() + 60*864e5));
+  return s;
+}
+// כניסה עם מייל + סיסמה. 5 טעויות = נעילה ל-15 דקות + מייל אזהרה
+function pwLogin_(email, pw) {
+  const cache = CacheService.getScriptCache(), fails = +(cache.get('pw_fail') || 0);
+  if (fails >= 5) return {ok:false, reason:'locked'};
+  const p = PropertiesService.getScriptProperties(), hash = p.getProperty('pw_hash'), salt = p.getProperty('pw_salt');
+  const good = !!hash && String(email||'').trim().toLowerCase() === adminEmail_().toLowerCase()
+    && typeof pw === 'string' && pw.length <= 200 && pwHash_(pw, salt) === hash;
+  if (!good) {
+    cache.put('pw_fail', String(fails+1), 900);
+    if (fails + 1 === 5) try { MailApp.sendEmail({to: adminEmail_(), name:'Noa Cosmetics', subject:'⚠️ ניסיונות כניסה שגויים לדף הניהול',
+      body:'היו 5 ניסיונות כניסה שגויים לדף הניהול, והכניסה ננעלה ל-15 דקות.\nאם זה לא היית אתה, מומלץ להחליף סיסמה מתוך דף הניהול.'}); } catch (err) {}
+    return {ok:false, reason: hash ? 'wrong' : 'nopw'};
+  }
+  cache.remove('pw_fail');
+  return {ok:true, s:newSession_()};
+}
 
 // שלב 1: שולח קישור כניסה רק למייל של נעה (עד 3 פעמים ב-15 דקות)
 function adminLogin_() {
@@ -244,7 +269,7 @@ function adminLogin_() {
   const t = token_();
   cache.put('login_' + sha_(t), '1', 900);            // הקישור תקף 15 דקות, פעם אחת
   const url = (cfg_().site_url || 'https://noa-cosmetics.vercel.app').replace(/\/$/, '') + '/admin#t=' + t;
-  MailApp.sendEmail({to: ownerEmail_(), name:'Noa Cosmetics', subject:'קישור כניסה לדף הניהול',
+  MailApp.sendEmail({to: adminEmail_(), name:'Noa Cosmetics', subject:'קישור כניסה לדף הניהול',
     body:'היי נעה,\nלכניסה לדף הניהול לחצי על הקישור (תקף ל-15 דקות):\n'+url+'\n\nאם לא ביקשת להיכנס, אפשר להתעלם מהמייל.',
     htmlBody:'<div dir="rtl" style="font-family:Arial,sans-serif;font-size:16px"><p>היי נעה,</p><p><a href="'+url+'" style="background:#86695e;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;display:inline-block">כניסה לדף הניהול</a></p><p style="color:#777;font-size:13px">הקישור תקף ל-15 דקות ולשימוש אחד. אם לא ביקשת להיכנס, אפשר להתעלם מהמייל.</p></div>'});
   return {ok:true};
@@ -255,9 +280,7 @@ function adminSession_(t) {
   const cache = CacheService.getScriptCache(), k = 'login_' + sha_(t);
   if (!cache.get(k)) return {ok:false};
   cache.remove(k);
-  const s = token_();
-  PropertiesService.getScriptProperties().setProperty('sess_' + sha_(s), String(Date.now() + 60*864e5));
-  return {ok:true, s};
+  return {ok:true, s:newSession_()};
 }
 function authed_(s) {
   if (!/^[0-9a-f]{64}$/.test(String(s||''))) return false;
@@ -279,9 +302,20 @@ function admin_(d) {
       .map(r => ({key:String(r[0]), service:String(r[3]), name:String(r[4]), phone:String(r[5]).replace(/^'/,''), email:String(r[6])}))
       .sort((a,b) => a.key < b.key ? -1 : 1);
     const b = blocks_();
-    return {ok:true, bookings, blocks:{days:b.days.filter(k => k >= today), hours:b.hours.filter(k => k >= today)},
+    const pp = PropertiesService.getScriptProperties();
+    return {ok:true, admin: adminEmail_(), hasPw: !!pp.getProperty('pw_hash'), bookings, blocks:{days:b.days.filter(k => k >= today), hours:b.hours.filter(k => k >= today)},
       cfg:{open:c.open, close:c.close, fri_close:c.fri_close, closed_weekdays:c.closed_weekdays, closed_dates:c.closed_dates, whatsapp:c.whatsapp},
       services: SVC.map((x,i) => c['svc'+(i+1)+'_name'] || x[0])};
+  }
+  if (op === 'setpw') {
+    const pw = d.pw;
+    if (typeof pw !== 'string' || pw.length < 8 || pw.length > 200) return {ok:false, reason:'weak'};
+    const salt = token_(), pp = PropertiesService.getScriptProperties();
+    pp.setProperties({pw_salt: salt, pw_hash: pwHash_(pw, salt)});
+    // מנתק את כל שאר המכשירים, משאיר את המכשיר הנוכחי מחובר
+    const all = pp.getProperties(), keep = 'sess_' + sha_(d.s);
+    Object.keys(all).forEach(k => { if (k.indexOf('sess_') === 0 && k !== keep) pp.deleteProperty(k); });
+    return {ok:true};
   }
   if (op === 'logout') { PropertiesService.getScriptProperties().deleteProperty('sess_' + sha_(d.s)); return {ok:true}; }
 
