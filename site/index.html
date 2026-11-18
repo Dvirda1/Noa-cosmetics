@@ -89,9 +89,13 @@ section{padding:64px 0}
 .sc{position:relative;height:230px;border-radius:14px;overflow:hidden;background:var(--ph);box-shadow:0 10px 26px #6b544822;transition:.25s}
 .sc:hover{transform:translateY(-5px)}
 .sc{background-size:cover;background-position:center}
-.sc .cap{position:absolute;inset:auto 0 0;background:rgba(98,78,68,.88);color:#fff;padding:9px 12px;text-align:center}
+.sc{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sc:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.sc .cap{position:absolute;inset:auto 0 0;background:rgba(98,78,68,.82);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#fff;padding:9px 12px;text-align:center;transition:background .3s}
 .sc .cap b{display:block;font-weight:400;font-size:1.05rem}
-.sc .cap small{font-size:.8rem;opacity:.85}
+.sc .cap small{display:block;font-size:.85rem;max-height:0;opacity:0;overflow:hidden;transition:max-height .35s ease,opacity .3s,margin .35s}
+.sc.open .cap{background:rgba(98,78,68,.92)}
+.sc.open .cap small{max-height:4.5em;opacity:.92;margin-top:4px}
 .about{background:var(--bg2)}
 .about .wrap{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
 @media(max-width:760px){.about .wrap{grid-template-columns:1fr}}
@@ -302,6 +306,9 @@ if(API)loadContent();
 if(API){const ld=async()=>{try{const r=await fetch(API+'?action=taken');const j=await r.json();taken=new Set(j.taken);renderSlots()}catch(e){}};ld();setInterval(ld,30000)}
 $('heroimg').style.backgroundImage='url('+IMG[2]+')';
 document.querySelectorAll('.sc[data-i]').forEach(e=>e.style.backgroundImage='url('+IMG[e.dataset.i]+')');
+document.querySelectorAll('.sc').forEach(c=>{c.tabIndex=0;c.setAttribute('role','button');c.setAttribute('aria-expanded','false');
+const t=()=>{const o=c.classList.toggle('open');c.setAttribute('aria-expanded',o)};
+c.addEventListener('click',t);c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();t()}})});
 document.querySelectorAll('[data-bg]').forEach(e=>e.style.backgroundImage='url('+IMG[e.dataset.bg]+')');
 IMG.forEach((s,i)=>{const im=document.createElement('img');im.src=s;im.loading='lazy';im.alt='עבודה של נעה';im.onclick=()=>{$('lb').firstChild.src=s;$('lb').classList.add('on')};$('gal').appendChild(im)});
 $('lb').onclick=()=>$('lb').classList.remove('on');
