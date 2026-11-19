@@ -99,13 +99,17 @@ async function notify(d, c) {
 // ================= כניסה לדף הניהול =================
 async function newSession() {
   const s = K.token();
-  await db.ins('sessions', [{ hash: K.sha(s), exp: new Date(Date.now() + 60 * 864e5).toISOString() }], 'return=minimal');
+  await db.ins('sessions', [{ hash: K.sha(s), exp: new Date(Date.now() + 180 * 864e5).toISOString() }], 'return=minimal');
   return s;
 }
 async function authed(s) {
   if (!/^[0-9a-f]{64}$/.test(String(s || ''))) return false;
   const r = await db.sel('sessions', 'select=exp&hash=' + eq(K.sha(s)));
-  return !!r.length && new Date(r[0].exp) > new Date();
+  if (!r.length || new Date(r[0].exp) <= new Date()) return false;
+  // כל שימוש מאריך: נשאר מחובר כל עוד נכנסים לפחות פעם ב-180 יום
+  if (new Date(r[0].exp) - Date.now() < 150 * 864e5)
+    await db.upd('sessions', 'hash=' + eq(K.sha(s)), { exp: new Date(Date.now() + 180 * 864e5).toISOString() });
+  return true;
 }
 async function locked() {
   const r = await db.sel('counters', 'select=n,reset_at&k=eq.pw_fail');

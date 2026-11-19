@@ -32,3 +32,5 @@ After making a change the user asked for:
 - Fridays and Saturdays are always closed in code (`OFF_DAYS` in `lib/core.js`, `w===5||w===6` in app.js, `getDay()>=5` in admin.js); the `closed_weekdays` setting is `5,6`. Reopening Fridays needs all three changed.
 - Admin "💗 תודה" button opens WhatsApp with the sheet's `thanks_text` (sent in the admin `list` response as `thanks`); the "sent" mark is stored per phone in localStorage only.
 - Apps Script: main deployment is on v17 (Fridays + thanks); the 3 old deployments are still on v16.
+- Admin login lasts 180 days per device and renews itself on use (`authed()` in `api/index.js`); deploys never log anyone out. An iPhone home-screen app keeps its own login, separate from Safari. With a password set, log in with email + password — "שכחתי סיסמה" is only for a forgotten password.
+- Local previews: open them in a NEW browser tab, never in the tab where the user is logged in to the live admin.
