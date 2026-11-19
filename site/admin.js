@@ -56,6 +56,12 @@ async function boot(){
 }
 $('logout').onclick=async()=>{if(!confirm('לצאת מדף הניהול במכשיר הזה?'))return;try{await adm('logout')}catch(e){}store.del('noa_admin');S=null;loginView('יצאת. אפשר להיכנס שוב מתי שתרצי.')};
 $('refresh').onclick=()=>load();
+const menuOpen=o=>{$('menu').hidden=!o;$('menubtn').setAttribute('aria-expanded',o)};
+$('menubtn').onclick=e=>{e.stopPropagation();menuOpen($('menu').hidden)};
+$('menu').addEventListener('click',()=>menuOpen(false));
+document.addEventListener('click',e=>{if(!e.target.closest('.mwrap'))menuOpen(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')menuOpen(false)});
+$('setbtn').onclick=()=>{if(!D)return;tab='set';render();scrollTo(0,0)};
 $('pwbtn').onclick=()=>{if(D)pwSheet(!D.hasPw)};
 
 /* ---------- נתונים ---------- */
@@ -74,8 +80,8 @@ function countFor(k){return Object.keys(D.bk).filter(x=>x.startsWith(k)).length}
 /* ---------- תצוגה ---------- */
 function render(){
   const ds=days();if(!sel)sel=dk(ds[0]);
-  let h='<div class="tabs"><button data-t="day" class="'+(tab==='day'?'on':'')+'">לוח לפי ימים</button><button data-t="list" class="'+(tab==='list'?'on':'')+'">כל התורים ('+D.bookings.length+')</button><button data-t="set" class="'+(tab==='set'?'on':'')+'">הגדרות</button></div>';
-  if(tab==='set'){$('app').innerHTML=h+'<div id="setbox"><p class="empty">טוען…</p></div>';$('app').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});return settings()}
+  let h='<div class="tabs"><button data-t="day" class="'+(tab==='day'?'on':'')+'">לוח לפי ימים</button><button data-t="list" class="'+(tab==='list'?'on':'')+'">כל התורים ('+D.bookings.length+')</button></div>';
+  if(tab==='set'){$('app').innerHTML='<div class="sethead"><h2>עריכת האתר</h2><button class="btn ghost sm" id="setback">→ חזרה לתורים</button></div><div id="setbox"><p class="empty">טוען…</p></div>';$('setback').onclick=()=>{tab='day';render();scrollTo(0,0)};return settings()}
   if(tab==='list')h+=listHtml();else h+=dayHtml(ds);
   $('app').innerHTML=h;
   $('app').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
