@@ -1,4 +1,4 @@
-const API='https://script.google.com/macros/s/AKfycbw3nViWy8ztmxbpXAedS_mfhWgNlhUCerEdICTXRTUaEpZhkr_o6R7yzZz2RrQQBs2JjA/exec';
+const API='/api';
 const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -74,7 +74,8 @@ function countFor(k){return Object.keys(D.bk).filter(x=>x.startsWith(k)).length}
 /* ---------- תצוגה ---------- */
 function render(){
   const ds=days();if(!sel)sel=dk(ds[0]);
-  let h='<div class="tabs"><button data-t="day" class="'+(tab==='day'?'on':'')+'">לוח לפי ימים</button><button data-t="list" class="'+(tab==='list'?'on':'')+'">כל התורים ('+D.bookings.length+')</button></div>';
+  let h='<div class="tabs"><button data-t="day" class="'+(tab==='day'?'on':'')+'">לוח לפי ימים</button><button data-t="list" class="'+(tab==='list'?'on':'')+'">כל התורים ('+D.bookings.length+')</button><button data-t="set" class="'+(tab==='set'?'on':'')+'">הגדרות</button></div>';
+  if(tab==='set'){$('app').innerHTML=h+'<div id="setbox"><p class="empty">טוען…</p></div>';$('app').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});return settings()}
   if(tab==='list')h+=listHtml();else h+=dayHtml(ds);
   $('app').innerHTML=h;
   $('app').querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render()});
@@ -113,6 +114,24 @@ function thxLink(b){return 'https://wa.me/'+wa(b.phone)+'?text='+encodeURICompon
 const thxSent=k=>!!store.get('noa_thx_'+k);
 function thxBtn(b){const s=thxSent(b.key);return '<a class="btn thx sm'+(s?' done':'')+'" data-thx="'+b.key+'" href="'+esc(thxLink(b))+'" target="_blank" rel="noopener">'+(s?'✓ נשלחה תודה':'💗 תודה')+'</a>'}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-thx]');if(!a)return;store.set('noa_thx_'+a.dataset.thx,'1');setTimeout(()=>{a.classList.add('done');a.textContent='✓ נשלחה תודה'},300)});
+
+/* ---------- הגדרות: טקסטים, מחירים, שעות ---------- */
+async function settings(){
+  let j;try{j=await adm('content')}catch(e){if(e.message!=='auth')$('setbox').innerHTML='<p class="empty">אין חיבור. נסי שוב.</p>';return}
+  if(!j.ok||!j.fields){$('setbox').innerHTML='<p class="empty">לא הצלחנו לטעון.</p>';return}
+  const groups={};j.fields.forEach(f=>(groups[f.group]=groups[f.group]||[]).push(f));
+  let h='<p class="muted" style="margin:0 0 12px">מה שמשנים כאן מתעדכן באתר תוך דקה.</p>';
+  Object.keys(groups).forEach(g=>{h+='<div class="list"><div class="date">'+esc(g)+'</div>';
+    groups[g].forEach(f=>{const long=f.value.length>50||/text|title/.test(f.key);
+      h+='<label class="field"><span>'+esc(f.label)+'</span>'+(long?'<textarea data-f="'+esc(f.key)+'" rows="'+Math.min(6,Math.max(2,Math.ceil(f.value.length/40)))+'">'+esc(f.value)+'</textarea>':'<input data-f="'+esc(f.key)+'" value="'+esc(f.value)+'"'+(/price|open|close|whatsapp|weekdays|keep/.test(f.key)?' dir="ltr" style="text-align:right"':'')+'>')+'</label>'});h+='</div>'});
+  h+='<div style="position:sticky;bottom:calc(10px + env(safe-area-inset-bottom));margin-top:16px"><button class="btn" id="saveset" style="width:100%">שמירה</button></div>';
+  $('setbox').innerHTML=h;
+  const orig={};j.fields.forEach(f=>orig[f.key]=f.value);
+  $('saveset').onclick=async()=>{const v={};$('setbox').querySelectorAll('[data-f]').forEach(e=>{if(e.value!==orig[e.dataset.f])v[e.dataset.f]=e.value});
+    if(!Object.keys(v).length)return toast('לא שונה כלום');
+    $('saveset').disabled=true;try{const r=await adm('setcontent',{values:v});if(r.ok){Object.assign(orig,v);toast('נשמר ✅ האתר יתעדכן תוך דקה');load()}else toast('לא הצלחנו לשמור')}catch(e){if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}
+    $('saveset').disabled=false};
+}
 
 /* ---------- פעולות ---------- */
 async function run(op,extra,ok){try{const j=await adm(op,extra);if(j.ok){toast(ok);await load()}else toast(j.reason==='taken'?'השעה הזו כבר תפוסה':'לא הצלחנו. נסי שוב.')}catch(e){if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}}

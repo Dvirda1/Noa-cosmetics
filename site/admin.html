@@ -78,6 +78,7 @@ main{max-width:640px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-i
 .login p{color:var(--muted);margin:0 0 18px}
 .field{display:block;margin-bottom:12px;text-align:right}
 .field span{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.field textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;font:inherit;color:inherit;resize:vertical;line-height:1.5}
 .field input,.field select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:12px;min-height:46px}
 .sheet{position:fixed;inset:0;background:rgba(30,20,15,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .sheet.on{display:flex}
@@ -100,6 +101,6 @@ main{max-width:640px;margin:0 auto;padding:14px 16px calc(40px + env(safe-area-i
 <main id="app"></main>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="in" id="sheetIn"></div></div>
 <div class="toast" id="toast" role="status"></div>
-<script src="admin.js?v=2"></script>
+<script src="admin.js?v=3"></script>
 </body>
 </html>

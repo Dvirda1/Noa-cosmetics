@@ -1,5 +1,5 @@
 const IMG=["images/img01.jpg", "images/img02.jpg", "images/img03.jpg", "images/img04.jpg", "images/img05.jpg", "images/img06.jpg", "images/img07.jpg", "images/img08.jpg", "images/img09.jpg", "images/img10.jpg", "images/img11.jpg", "images/img12.jpg", "images/img13.jpg", "images/img14.jpg", "images/img15.jpg"];
-const API='https://script.google.com/macros/s/AKfycbw3nViWy8ztmxbpXAedS_mfhWgNlhUCerEdICTXRTUaEpZhkr_o6R7yzZz2RrQQBs2JjA/exec';
+const API='/api';
 const SERVICES=[{k:'brows',n:'עיצוב גבות',p:60},{k:'lash',n:'הרמת ריסים',p:200},{k:'lift',n:'הרמת גבות',p:150},{k:'combo',n:'חבילה משולבת',p:320}];
 const DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי'];
 let st={svc:'brows',date:null,time:null},taken=new Set(),closedDays=new Set(),db=null;
