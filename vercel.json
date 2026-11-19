@@ -1,5 +1,14 @@
 {
   "outputDirectory": "site",
+  "regions": [
+    "fra1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 16 * * *"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
