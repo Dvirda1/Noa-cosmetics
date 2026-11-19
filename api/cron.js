@@ -4,9 +4,11 @@ import * as K from '../lib/core.js';
 const { db, eq, send } = K;
 
 export default async function handler(req, res) {
+  // אם הוגדר CRON_SECRET ב-Vercel, רק Vercel יכול להפעיל. בלי זה: עד 3 הפעלות בשעה (הפעולה ממילא לא שולחת פעמיים).
   const secret = (process.env.CRON_SECRET || '').trim();
-  if (!secret || req.headers.authorization !== 'Bearer ' + secret) return send(res, { ok: false }, 401);
+  if (secret && req.headers.authorization !== 'Bearer ' + secret) return send(res, { ok: false }, 401);
   try {
+    if (!secret && !(await K.hit('cron_1h', 3, 3600))) return send(res, { ok: false }, 429);
     const c = await K.cfg(), now = K.ilNow(), tom = K.addDays(now.date, 1);
     const rows = await db.sel('bookings', 'select=key,service,name,phone,email&reminded=is.null&key=like.' + tom + '*&order=key');
     const lines = [];
