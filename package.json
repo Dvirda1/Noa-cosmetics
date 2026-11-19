@@ -1,0 +1,9 @@
+{
+  "name": "noa-cosmetics",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "nodemailer": "6.9.16"
+  }
+}
