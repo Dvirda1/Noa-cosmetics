@@ -65,3 +65,10 @@ alter table login_tokens enable row level security;
 alter table secrets      enable row level security;
 alter table counters     enable row level security;
 revoke execute on function hit(text, int, int) from public, anon, authenticated;
+
+-- רק לשרת (service_role) יש גישה. האתר הציבורי (anon) לא רואה כלום.
+grant usage on schema public to service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+grant execute on function hit(text, int, int) to service_role;
+revoke all on all tables in schema public from anon, authenticated;
