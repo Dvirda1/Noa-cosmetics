@@ -1,5 +1,6 @@
 // Noa Cosmetics - ניהול האתר, תורים, התראות ותזכורות
-const THANKS = 'היי {name} 💗\nתודה רבה על קביעת התור!\nהתור שלך ל{service} נקבע ל{when}.\nהכתובת: {address}\nמחכה לך ב-Noa Cosmetics ✨';
+const THANKS = 'היי {name} 💗\nתודה רבה על קביעת התור!\nהתור שלך ל{service} נקבע ל{when}.\nהכתובת: {address}\nניווט: {map}\nמחכה לך ב-Noa Cosmetics ✨ נעה\nאם צריך לשנות או לבטל, אפשר לכתוב לי כאן.';
+const OFF_DAYS = [5,6]; // שישי ושבת סגורים תמיד
 const esc_ = s => String(s||'').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const SVC = [['עיצוב גבות','מראה מדויק וטבעי',60],['הרמת ריסים','ריסים מורמים ומסולסלים',200],['הרמת גבות','גבות מסודרות ומלאות',150],['חבילה משולבת','כמה טיפולים בביקור אחד',320]];
 
@@ -14,14 +15,14 @@ function defaults_() {
     ['address','משעול ברל כצנלסון 2, שדרות','כתובת'],
     ['phone','050-647-3569','טלפון'],
     ['whatsapp','972506473569','וואטסאפ בפורמט בינלאומי: 972 ואז המספר בלי 0'],
-    ['hours_text','ימים א׳–ה׳ 09:00–18:00 · שישי 09:00–13:00 · שבת סגור','הטקסט שמוצג ללקוחות על שעות הפעילות'],
+    ['hours_text','ימים א׳–ה׳ 09:00–18:00 · שישי ושבת סגור','הטקסט שמוצג ללקוחות על שעות הפעילות'],
     ['open','9','שעת פתיחה (מספר)'],
     ['close','18','שעת סגירה בימים א׳–ה׳'],
     ['fri_close','13','שעת סגירה ביום שישי'],
-    ['closed_weekdays','6','ימים סגורים: 0=ראשון ... 6=שבת, מופרדים בפסיק'],
+    ['closed_weekdays','5,6','ימים סגורים: 0=ראשון ... 6=שבת, מופרדים בפסיק (שישי ושבת סגורים תמיד)'],
     ['closed_dates','','תאריכי חופשה בפורמט 2026-12-25, מופרדים בפסיק'],
     ['notify_email','','אימייל לקבלת התראות (ריק = האימייל של בעל הגיליון)'],
-    ['thanks_text',THANKS,'הודעת התודה בוואטסאפ אחרי קביעת תור. אפשר להשתמש ב- {name} {service} {when} {address}'],
+    ['thanks_text',THANKS,'הודעת התודה בוואטסאפ אחרי קביעת תור. אפשר להשתמש ב- {name} {service} {when} {address} {map}'],
     ['reminder_text','היי {name}, תזכורת לתור שלך מחר ב-{time} ({service}) ב-Noa Cosmetics 💗 מחכה לך! אם צריך לשנות, כתבי לי כאן.','נוסח התזכורת. אפשר להשתמש ב- {name} {time} {service}'],
     ['site_url','https://noa-cosmetics.vercel.app','כתובת האתר (לקישור הכניסה לדף הניהול)'],
     ['keep_days','180','כמה ימים לשמור פרטי לקוחות של תורים שעברו (ריק = לשמור תמיד)'],
@@ -120,7 +121,7 @@ function validate_(d) {
   const w = when_(key), at = new Date(w.y, w.m-1, w.da, w.h, 0), now = Date.now();
   if (isNaN(at) || at.getDate() !== w.da || at <= now || at - now > 45*864e5) return null;
   const wd = at.getDay(), open = +(c.open||9), close = wd === 5 ? +(c.fri_close||13) : +(c.close||18);
-  if (String(c.closed_weekdays||'6').split(/[,\s]+/).indexOf(String(wd)) > -1) return null;
+  if (OFF_DAYS.indexOf(wd) > -1 || String(c.closed_weekdays||'6').split(/[,\s]+/).indexOf(String(wd)) > -1) return null;
   if (String(c.closed_dates||'').split(/[,\s]+/).indexOf(key.split('_')[0]) > -1) return null;
   if (w.h < open || w.h >= close) return null;
   const b = blocks_();
@@ -315,6 +316,7 @@ function admin_(d) {
     const pp = PropertiesService.getScriptProperties();
     return {ok:true, admin: adminEmail_(), hasPw: !!pp.getProperty('pw_hash'), bookings, blocks:{days:b.days.filter(k => k >= today), hours:b.hours.filter(k => k >= today)},
       cfg:{open:c.open, close:c.close, fri_close:c.fri_close, closed_weekdays:c.closed_weekdays, closed_dates:c.closed_dates, whatsapp:c.whatsapp},
+      thanks: (c.thanks_text || THANKS).replace(/\{address\}/g,c.address||'').replace(/\{map\}/g,'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(c.address||'')),
       services: SVC.map((x,i) => c['svc'+(i+1)+'_name'] || x[0])};
   }
   if (op === 'setpw') {

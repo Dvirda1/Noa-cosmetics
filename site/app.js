@@ -7,7 +7,7 @@ const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const dk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 let CFG={},WA='972506473569';
-function hoursFor(d){const w=d.getDay();if(closedDays.has(dk(d))||String(CFG.closed_weekdays||'6').split(/[,\s]+/).includes(String(w))||String(CFG.closed_dates||'').split(/[,\s]+/).includes(dk(d)))return[];const o=+(CFG.open||9),end=w===5?+(CFG.fri_close||13):+(CFG.close||18);const h=[];for(let x=o;x<end;x++)h.push(pad(x)+':00');return h}
+function hoursFor(d){const w=d.getDay();if(w===5||w===6||closedDays.has(dk(d))||String(CFG.closed_weekdays||'6').split(/[,\s]+/).includes(String(w))||String(CFG.closed_dates||'').split(/[,\s]+/).includes(dk(d)))return[];const o=+(CFG.open||9),end=w===5?+(CFG.fri_close||13):+(CFG.close||18);const h=[];for(let x=o;x<end;x++)h.push(pad(x)+':00');return h}
 const gi=u=>{const m=String(u).match(/[-\w]{25,}/);return /drive\.google|^[-\w]{25,}$/.test(u)&&m?'https://drive.google.com/thumbnail?id='+m[0]+'&sz=w1200':u};
 const fixText = v => String(v ?? '').replace(/סגנוד/g,'סגנון');
 async function loadContent(){try{const r=await fetch(API+'?action=content');const j=await r.json();CFG=j.content||{};
@@ -17,7 +17,7 @@ if(CFG.whatsapp){WA=CFG.whatsapp;$('wal').href='https://wa.me/'+WA}if(CFG.phone)
 document.querySelectorAll('[data-img]').forEach(e=>{const v=CFG[e.dataset.img];if(v)e.style.backgroundImage='url('+gi(v)+')'});
 if(j.gallery&&j.gallery.length){$('gal').innerHTML='';j.gallery.forEach(id=>{const s='https://drive.google.com/thumbnail?id='+id+'&sz=w1000',im=document.createElement('img');im.src=s;im.loading='lazy';im.alt='עבודה של נעה';im.onclick=()=>{$('lb').firstChild.src=s;$('lb').classList.add('on')};$('gal').appendChild(im)})}
 renderSvc();renderDays();renderSlots()}catch(e){}}
-const dates=[];{const t=new Date();for(let i=0;dates.length<14&&i<30;i++){const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()+i);if(d.getDay()!==6)dates.push(d)}}
+const dates=[];{const t=new Date();for(let i=0;dates.length<14&&i<30;i++){const d=new Date(t.getFullYear(),t.getMonth(),t.getDate()+i);if(d.getDay()<5)dates.push(d)}}
 st.date=dk(dates[0]);
 function renderSvc(){$('svc').innerHTML='';SERVICES.forEach(s=>{const b=document.createElement('button');b.className='chip'+(st.svc===s.k?' on':'');b.textContent=s.n+' · '+s.p+' ₪';b.onclick=()=>{st.svc=s.k;renderSvc()};$('svc').appendChild(b)})}
 function renderDays(){$('days').innerHTML='';dates.forEach(d=>{const b=document.createElement('button');const k=dk(d);b.className='chip day'+(st.date===k?' on':'');b.innerHTML='<small>'+DN[d.getDay()]+'</small><b>'+d.getDate()+'</b><small>'+pad(d.getMonth()+1)+'</small>';b.onclick=()=>{st.date=k;st.time=null;renderDays();renderSlots();upd()};$('days').appendChild(b)})}

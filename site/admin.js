@@ -66,7 +66,7 @@ async function load(){
   finally{$('app').classList.remove('loading')}
 }
 function days(){const a=[],t=new Date();for(let i=0;i<45;i++)a.push(new Date(t.getFullYear(),t.getMonth(),t.getDate()+i));return a}
-function weeklyClosed(d){const c=D.cfg;return String(c.closed_weekdays||'6').split(/[,\s]+/).includes(String(d.getDay()))||String(c.closed_dates||'').split(/[,\s]+/).includes(dk(d))}
+function weeklyClosed(d){const c=D.cfg;return d.getDay()>=5||String(c.closed_weekdays||'6').split(/[,\s]+/).includes(String(d.getDay()))||String(c.closed_dates||'').split(/[,\s]+/).includes(dk(d))}
 function hours(d){const c=D.cfg,o=+(c.open||9),e=d.getDay()===5?+(c.fri_close||13):+(c.close||18),h=[];for(let x=o;x<e;x++)h.push(pad(x)+':00');
   Object.keys(D.bk).forEach(k=>{if(k.startsWith(dk(d))){const t=k.slice(11);if(!h.includes(t))h.push(t)}});return h.sort()}
 function countFor(k){return Object.keys(D.bk).filter(x=>x.startsWith(k)).length}
@@ -91,7 +91,7 @@ function dayHtml(ds){
   const hs=(vac||wk)?Object.keys(D.bk).filter(k=>k.startsWith(sel)).map(k=>k.slice(11)).sort():hours(d);
   if(!hs.length&&(vac||wk))return h+'<p class="empty">אין תורים ביום הזה.</p>'+rangeBtn();
   h+=hs.map(t=>{const k=sel+'_'+t,b=D.bk[k],blk=D.bh.has(k),past=isToday&&parseInt(t)<=now.getHours();
-    if(b)return '<div class="slot booked'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+k+'">ביטול</button></div></div>';
+    if(b)return '<div class="slot booked'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?thxBtn(b)+'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+k+'">ביטול</button></div></div>';
     if(blk)return '<div class="slot blocked'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><span class="tag blk">⛔ חסום</span></div><div class="a"><button class="btn ghost sm" data-act="unblock" data-k="'+k+'">פתיחה</button></div></div>';
     return '<div class="slot'+(past?' past':'')+'"><div class="h">'+t+'</div><div class="m"><span class="tag free">פנוי</span></div><div class="a">'+(past?'':'<button class="btn ghost sm" data-act="add" data-k="'+k+'">+ תור</button><button class="btn ghost sm" data-act="block" data-k="'+k+'">חסימה</button>')+'</div></div>';
   }).join('');
@@ -102,9 +102,17 @@ function listHtml(){
   if(!D.bookings.length)return '<p class="empty">אין תורים עתידיים כרגע.</p>';
   let h='<div class="list">',last='';
   D.bookings.forEach(b=>{const d=b.key.slice(0,10);if(d!==last){h+='<div class="date">'+label(d)+'</div>';last=d}
-    h+='<div class="slot booked"><div class="h">'+b.key.slice(11)+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+b.key+'">ביטול</button></div></div>'});
+    h+='<div class="slot booked"><div class="h">'+b.key.slice(11)+'</div><div class="m"><b>'+esc(b.name)+'</b><small>'+esc(b.service)+(b.phone?' · <span dir="ltr">'+esc(b.phone)+'</span>':'')+'</small></div><div class="a">'+(b.phone?thxBtn(b)+'<a class="btn ghost sm" href="https://wa.me/'+wa(b.phone)+'" target="_blank" rel="noopener">וואטסאפ</a>':'')+'<button class="btn ghost sm" data-act="cancel" data-k="'+b.key+'">ביטול</button></div></div>'});
   return h+'</div>';
 }
+
+/* ---------- הודעת תודה בוואטסאפ ---------- */
+const THX_DEF='היי {name} 💗\nתודה רבה על קביעת התור!\nהתור שלך ל{service} נקבע ל{when}.\nמחכה לך ב-Noa Cosmetics ✨ נעה';
+function thxMsg(b){return String(D.thanks||THX_DEF).replace(/\{name\}/g,b.name).replace(/\{service\}/g,b.service).replace(/\{when\}/g,label(b.key)+' בשעה '+b.key.slice(11)).replace(/\{address\}|\{map\}/g,'')}
+function thxLink(b){return 'https://wa.me/'+wa(b.phone)+'?text='+encodeURIComponent(thxMsg(b))}
+const thxSent=k=>!!store.get('noa_thx_'+k);
+function thxBtn(b){const s=thxSent(b.key);return '<a class="btn thx sm'+(s?' done':'')+'" data-thx="'+b.key+'" href="'+esc(thxLink(b))+'" target="_blank" rel="noopener">'+(s?'✓ נשלחה תודה':'💗 תודה')+'</a>'}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-thx]');if(!a)return;store.set('noa_thx_'+a.dataset.thx,'1');setTimeout(()=>{a.classList.add('done');a.textContent='✓ נשלחה תודה'},300)});
 
 /* ---------- פעולות ---------- */
 async function run(op,extra,ok){try{const j=await adm(op,extra);if(j.ok){toast(ok);await load()}else toast(j.reason==='taken'?'השעה הזו כבר תפוסה':'לא הצלחנו. נסי שוב.')}catch(e){if(e.message!=='auth')toast('אין חיבור. נסי שוב.')}}
@@ -130,6 +138,6 @@ function act(a,k){
   if(a==='add'){
     sheet('<h3>רישום תור: '+label(k)+' · '+k.slice(11)+'</h3><p>למי שקבעה בטלפון או בוואטסאפ. השעה תיתפס באתר.</p><label class="field"><span>שם</span><input id="an" autocomplete="off"></label><label class="field"><span>טלפון (לא חובה)</span><input id="ap" type="tel" dir="ltr" style="text-align:right"></label><label class="field"><span>טיפול</span><select id="as">'+D.services.map(s=>'<option>'+esc(s)+'</option>').join('')+'</select></label><div class="row"><button class="btn" id="ok">שמירת התור</button><button class="btn ghost" id="no">ביטול</button></div>');
     $('no').onclick=closeSheet;$('an').focus();
-    $('ok').onclick=()=>{const n=$('an').value.trim();if(n.length<2)return toast('צריך לכתוב שם');closeSheet();run('add',{key:k,name:n,phone:$('ap').value,service:$('as').value},'התור נרשם')};return}
+    $('ok').onclick=()=>{const n=$('an').value.trim();if(n.length<2)return toast('צריך לכתוב שם');const ph=$('ap').value,sv=$('as').value;closeSheet();run('add',{key:k,name:n,phone:ph,service:sv},'התור נרשם').then(()=>{const b=D&&D.bk[k];if(b&&b.phone)sheet('<h3>✅ התור נרשם</h3><p>רוצה לשלוח ל'+esc(b.name)+' הודעת תודה בוואטסאפ?</p>'+thxBtn(b).replace('btn thx sm','btn thx').replace('💗 תודה','💗 שליחת הודעת תודה').replace('<a ','<a id="tx" style="display:flex;margin-bottom:8px" ')+'<button class="btn ghost" id="no" style="width:100%">לא עכשיו</button>'),$('no')&&($('no').onclick=closeSheet),$('tx')&&$('tx').addEventListener('click',()=>setTimeout(closeSheet,400))})};return}
 }
 boot();
