@@ -26,3 +26,6 @@ Changes to `apps-script/Code.gs` take effect only after updating the script in G
 - Repo is public: never commit secrets, tokens or private data.
 - Commit identity is set locally to Dvirda1 / GitHub noreply email.
 - `assets/old/Code-old-2026-10-25.gs` has a WhatsApp thank-you message with a navigation link ({map}) and "נעה" signature that the current Code.gs dropped — the user may want it back.
+- Fridays and Saturdays are always closed in code (`OFF_DAYS` in Code.gs, `w===5||w===6` in app.js, `getDay()>=5` in admin.js); the sheet's `closed_weekdays` is `5,6`. Reopening Fridays needs all three changed.
+- Admin "💗 תודה" button opens WhatsApp with the sheet's `thanks_text` (sent in the admin `list` response as `thanks`); the "sent" mark is stored per phone in localStorage only.
+- Apps Script: main deployment is on v17 (Fridays + thanks); the 3 old deployments are still on v16.
